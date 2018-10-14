@@ -8,4 +8,78 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(p8105.datasets)
 ```
+
+## Problem 1
+
+```{r import data and do some cleaning}
+brfss_smart2010 = p8105.datasets::brfss_smart2010
+
+brfss_overall_health = brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  rename(state = locationabbr) %>% 
+  select(year, state, location_desc = locationdesc, topic, response, data_value) %>% 
+  filter(topic == "Overall Health") %>% 
+  filter(response == "Excellent" | response == "Very good" | response == "Good" | response == "Fair" | response == "Poor") %>% 
+  arrange(factor(response, c("Excellent", "Very good", "Good", "Fair", "Poor"))) 
+```
+Question 1
+
+```{r problem1_q1}
+brfss_overall_health %>% 
+  filter(year == 2002) %>% 
+  distinct(location_desc, .keep_all = TRUE) %>% 
+  group_by(state) %>% 
+  mutate(location_num = n()) %>% 
+  distinct(state, location_num) %>% 
+  filter(location_num == 7) %>% 
+  knitr::kable()  
+```
+  
+  In 2002, CT, FL, NC were observed at 7 locations.
+
+```{r problem1_q2}
+spaghetti = brfss_overall_health %>% 
+  select(year, state, location_desc) %>% 
+  distinct(year, location_desc, .keep_all = TRUE) %>% 
+  group_by(state, year) %>% 
+  mutate(location_num = n()) %>% 
+  distinct(year, state, location_num)
+
+ggplot(spaghetti, aes(x= year, y = location_num, color = state)) +
+  geom_point() +
+  geom_line()
+```
+
+```{r problem1_q3}
+ny_response = brfss_overall_health %>% 
+  filter(state == "NY" & response == "Excellent") %>% 
+  filter(year %in% c(2002, 2006, 2010)) 
+
+ny_mean = aggregate(ny_response[, 6], list(ny_response$location_desc), mean) %>% 
+  rename(mean = data_value, location = Group.1)
+ny_sd = aggregate(ny_response[, 6], list(ny_response$location_desc), sd) %>% 
+  rename(sd = data_value, location = Group.1)
+ny_mean_sd = left_join(ny_mean, ny_sd, by = "location")
+
+knitr::kable(ny_mean_sd)
+```
+
+## Problem3
+```{r}
+instacart = p8105.datasets::instacart %>% 
+  janitor::clean_names()
+```
+
+```{r problem3_q1}
+instacart %>% 
+  group_by(aisle) %>% 
+  mutate(aisle_count = n()) %>% 
+  select(aisle, aisle_count) %>% 
+  distinct(aisle, .keep_all = TRUE) %>% 
+  arrange(desc(aisle_count))
+```
+
+
+
