@@ -97,12 +97,6 @@ aisle_order = instacart %>%
 ```
 
   There are 134 aisles, and fresh vegetables is the onr that most items ordered from.  
-  
-  Question 2
-
-```{r problem2_q2}
-
-```
 
   Question 3  
 
@@ -152,7 +146,9 @@ apple_and_ice %>%
 ```{r}
 ny_noaa_raw = p8105.datasets::ny_noaa
 ```
-
+  
+  Question 1  
+  
 ```{r problem3_q1}
 ny_noaa = ny_noaa_raw %>% 
   separate(date, into = c("year", "month", "day"), spe = "-") %>% 
@@ -167,8 +163,10 @@ ny_noaa %>%
   arrange(desc(snow_count)) %>% 
   head(1)
 ```
-For snowfall, 0 is the most commonly observed values, because it doesn't snow in most time of a year in New York.
-
+For snowfall, 0 is the most commonly observed values, because it doesn't snow in most time of a year in New York.  
+  
+  QUestion 2  
+  
 ```{r problem3_q2}
 tmax_jan_jul = ny_noaa %>% 
   select(id, year, month, tmax) %>% 
@@ -194,7 +192,9 @@ ggplot(tmax_jan_jul, aes(x = year, y = max) ) +
   viridis::scale_fill_viridis() +
   theme_bw()
 ```
-
+  
+  Question 3  
+  
 ```{r problem3_q3}
 tmax_vs_tmin = ny_noaa %>% 
   select(tmax, tmin) %>% 
