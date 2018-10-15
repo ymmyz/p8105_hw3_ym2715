@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
 library(hexbin)
+library(ggridges)
 ```
 
 ## Problem 1
@@ -164,11 +165,42 @@ tmax_jan_jul$month = recode(tmax_jan_jul$month,
 
 ggplot(tmax_jan_jul, aes(x = year, y = max) ) +
   geom_hex() +
-  facet_grid(. ~ month)
-
-summarise()
-  View()
+  facet_grid(. ~ month) +
+  scale_x_discrete(breaks = seq(1980, 2010, by = 5)) +
+  labs(
+    title = "Maximum temperature in New York",
+    x = "Year",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) +
+  viridis::scale_fill_viridis() +
+  theme_bw()
 ```
+
+```{r problem3_q3}
+tmax_vs_tmin = ny_noaa %>% 
+  select(tmax, tmin) %>% 
+  na.omit(tmax, tmin)
+
+tmax_vs_tmin_graph = ggplot(tmax_vs_tmin, aes(x = tmin, y = tmax)) +
+  geom_hex() +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) +
+  viridis::scale_fill_viridis() +
+  theme_bw()
+
+snowfall_df = ny_noaa %>% 
+  select(year, snow) %>% 
+  na.omit(snow) %>% 
+  filter(snow > 0 & snow < 100)
+
+
+```
+
 
 
 
