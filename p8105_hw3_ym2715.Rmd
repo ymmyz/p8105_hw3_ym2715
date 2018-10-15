@@ -9,6 +9,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(p8105.datasets)
+library(hexbin)
 ```
 
 ## Problem 1
@@ -66,20 +67,110 @@ ny_mean_sd = left_join(ny_mean, ny_sd, by = "location")
 knitr::kable(ny_mean_sd)
 ```
 
-## Problem3
+## Problem2
 ```{r}
 instacart = p8105.datasets::instacart %>% 
   janitor::clean_names()
 ```
 
-```{r problem3_q1}
-instacart %>% 
+```{r problem2_q1}
+aisle_order = instacart %>% 
   group_by(aisle) %>% 
-  mutate(aisle_count = n()) %>% 
-  select(aisle, aisle_count) %>% 
+  mutate(order_count = n()) %>% 
+  select(aisle, order_count) %>% 
   distinct(aisle, .keep_all = TRUE) %>% 
-  arrange(desc(aisle_count))
+  arrange(desc(order_count))
 ```
+
+There are 134 aisles, and fresh vegetables is the onr that most items ordered from.  
+
+```{r problem2_q2}
+
+```
+
+
+```{r problem2_q3}
+popular_item = instacart %>% 
+  select(aisle, product_name) %>% 
+  filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>% 
+  group_by(product_name) %>% 
+  mutate(item_count = n()) %>% 
+  distinct(product_name, .keep_all = TRUE) %>% 
+  arrange(aisle, product_name) 
+
+popular_item %>% 
+  group_by(aisle) %>%
+  summarize(max_item_name = product_name[which.max(item_count)], max_item_count = max(item_count)) %>% 
+  knitr::kable()
+
+```
+
+```{r problem2_q4}
+apple_and_ice = instacart %>% 
+  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>% 
+  select(product_name, order_dow, order_hour = order_hour_of_day) %>% 
+  group_by(order_dow) %>% 
+  summarise(mean_hour = mean(order_hour)) %>% 
+  mutate(mean_hour = round(mean_hour, digits = 1)) 
+
+apple_and_ice$order_dow = recode(apple_and_ice$order_dow, 
+                                 "0" = "Sunday",
+                                 "1" = "Monday",
+                                 "2" = "Tuesday",
+                                 "3" = "Wednesday",
+                                 "4" = "Thursday",
+                                 "5" = "Friday",
+                                 "6" = "Saturday")
+
+apple_and_ice %>% 
+  rename(day_of_week = order_dow,
+         order_time = mean_hour) %>% 
+  knitr::kable()
+```
+
+## Problem3
+
+```{r}
+ny_noaa_raw = p8105.datasets::ny_noaa
+```
+
+```{r problem3_q1}
+ny_noaa = ny_noaa_raw %>% 
+  separate(date, into = c("year", "month", "day"), spe = "-") %>% 
+  mutate(prcp = prcp / 10,
+         tmax = as.numeric(tmax) / 10,
+         tmin = as.numeric(tmin) / 10)
+
+ny_noaa %>% 
+  group_by(snow) %>% 
+  mutate(snow_count = n()) %>% 
+  distinct(snow, .keep_all = TRUE) %>% 
+  arrange(desc(snow_count)) %>% 
+  head(1)
+```
+For snowfall, 0 is the most commonly observed values, because it doesn't snow in most time of a year in New York.
+
+```{r problem3_q2}
+tmax_jan_jul = ny_noaa %>% 
+  select(id, year, month, tmax) %>% 
+  na.omit(tmax) %>% 
+  filter(month == "01" | month == "07" ) %>% 
+  group_by(id, year, month) %>% 
+  summarise(max = max(tmax))
+
+tmax_jan_jul$month = recode(tmax_jan_jul$month,
+                            "01" = "January",
+                            "07" = "July")
+
+ggplot(tmax_jan_jul, aes(x = year, y = max) ) +
+  geom_hex() +
+  facet_grid(. ~ month)
+
+summarise()
+  View()
+```
+
+
 
 
 
